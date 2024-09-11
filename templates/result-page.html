@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Color Test - 결과</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="WeDr" class="logo">
+        </header>
+        <main>
+            <h1>결과</h1>
+            <div id="results">
+                <!-- 결과 항목이 여기에 동적으로 추가됩니다 -->
+            </div>
+            <button class="test-button" onclick="retakeTest()">다시 테스트 하기</button>
+            <button class="back-button" onclick="goBack()">뒤로 가기</button> <!-- 뒤로가기 버튼 추가 -->
+        </main>
+        <footer>
+            <p>WeDr © 2024. All rights reserved.</p>
+            <div class="social-links">
+                <a href="https://www.instagram.com/dyo_asteria_">NATHAN</a>
+                <a href="#">EVE</a>
+                <a href="https://www.instagram.com/bt_mincho">ERIC</a>
+                <a href="https://www.instagram.com/dx_siij/">RUBY</a>
+                <a href="https://www.instagram.com/dx_siij/ljwshorts">GARDEN</a>
+            </div>
+            <div class="social-icons">
+
+                <a href="#"><img src="{{ url_for('static', filename='images/instagram-icon.png') }}" alt="Instagram"></a>
+
+            </div>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
