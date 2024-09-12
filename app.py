@@ -22,22 +22,22 @@ def get_image_url_for_season(season, detailed_season):
     base_url = 'http://localhost:5000'
     image_map = {
         "봄": {
-            "라이트 봄": f"{base_url}/static/images/spring_light.png",
-            "브라이트 봄": f"{base_url}/static/images/spring_bright.png"
+            "계란빵 - 봄 라이트": f"{base_url}/static/images/spring_light.png",
+            "초당옥수수 - 봄 브라이트": f"{base_url}/static/images/spring_bright.png"
         },
         "여름": {
-            "라이트 여름": f"{base_url}/static/images/summer_light.png",
-            "브라이트 여름": f"{base_url}/static/images/summer_bright.png",
-            "뮤트 여름": f"{base_url}/static/images/summer_muted.png"
+            "수박주스 - 여름 라이트": f"{base_url}/static/images/summer_light.png",
+            "솜사탕 - 여름 브라이트": f"{base_url}/static/images/summer_bright.png",
+            "콩국수 - 여름 뮤트": f"{base_url}/static/images/summer_muted.png"
         },
         "가을": {
-            "뮤트 가을": f"{base_url}/static/images/fall_muted.png",
-            "스트롱 가을": f"{base_url}/static/images/fall_strong.png",
-            "딥 가을": f"{base_url}/static/images/fall_deep.png"
+            "카스테라 - 가을 뮤트": f"{base_url}/static/images/fall_muted.png",
+            "군밤 - 가을 스트롱": f"{base_url}/static/images/fall_strong.png",
+            "팥죽 - 가을 딥": f"{base_url}/static/images/fall_deep.png"
         },
         "겨울": {
-            "브라이트 겨울": f"{base_url}/static/images/winter_bright.png",
-            "딥 겨울": f"{base_url}/static/images/winter_deep.png"
+            "블사탕 - 겨울 브라이트": f"{base_url}/static/images/winter_bright.png",
+            "밤양갱 - 겨울 딥": f"{base_url}/static/images/winter_deep.png"
         }
     }
     return image_map.get(season, {}).get(detailed_season, f"{base_url}/static/images/default.jpg")
@@ -97,10 +97,10 @@ def cluster_to_season(cluster):
 
 def cluster_to_detailed_season(detailed_cluster, season_type):
     detailed_seasons = {
-        0: {0: "라이트 봄", 1: "브라이트 봄"},
-        1: {0: "라이트 여름", 1: "브라이트 여름", 2: "뮤트 여름"},
-        2: {0: "뮤트 가을", 1: "스트롱 가을", 2: "딥 가을"},
-        3: {0: "브라이트 겨울", 1: "딥 겨울"}
+        0: {0: "계란빵 - 봄 라이트", 1: "초당옥수수 - 봄 브라이트"},
+        1: {0: "수박주스 - 여름 라이트", 1: "솜사탕 - 여름 브라이트", 2: "콩국수 - 여름 뮤트"},
+        2: {0: "카스테라 - 가을 뮤트", 1: "군밤 - 가을 스트롱", 2: "팥죽 - 가을 딥"},
+        3: {0: "블사탕 - 겨울 브라이트", 1: "밤양갱 - 겨울 딥"}
     }
     return detailed_seasons.get(season_type, {}).get(detailed_cluster, "Unknown")
 

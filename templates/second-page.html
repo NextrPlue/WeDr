@@ -23,35 +23,32 @@
             </div>
             <div class="instruction-item">
                 <img src="{{ url_for('static', filename='images/icon2.png') }}" alt="주의사항">
-                <p>얼굴을 정면으로 바라보고 화장하지 않은 상태에서 촬영할 것</p>
+                <p>얼굴은 정면으로 바라보고 화장하지 않은 상태에서 촬영할 것</p>
             </div>
             <div class="instruction-item">
                 <img src="{{ url_for('static', filename='images/icon3.png') }}" alt="주의사항">
                 <p>기본 카메라로 무보정 상태에서 촬영할 것</p>
             </div>
         </div>
-        <button class="test-button" onclick="submitPhoto()">사진 제출 하기</button>
-        <button class="back-button" onclick="goBack()">뒤로 가기</button>
+        <button class="blue-button" id="submitButton" onclick="submitPhoto()">
+            <span class="button-text">사진 제출 하기</span>
+            <span class="loading-indicator">
+                <span class="loading-text">분석 중&nbsp;</span>
+                <span class="loading-dots">...</span>
+            </span>
+        </button>
+        <button class="gray-button" onclick="goBack()">뒤로 가기</button>
     </main>
     <footer>
-        <p>WeDr © 2024. All rights reserved.</p>
-        <div class="social-links">
-            <a href="https://www.instagram.com/dyo_asteria_">NATHAN</a>
-            <a href="#">EVE</a>
-            <a href="https://www.instagram.com/bt_mincho">ERIC</a>
-            <a href="https://www.instagram.com/dx_siij/">RUBY</a>
-            <a href="https://www.instagram.com/dx_siij/ljwshorts">GARDEN</a>
+        <div class="footer-left">
+            <p>© 2024 WeDr. All rights reserved.</p>
         </div>
-        <div class="social-icons">
-            <a href="#"><img src="{{ url_for('static', filename='images/instagram-icon.png') }}" alt="Instagram"></a>
+        <div class="footer-right">
+            <a href="https://www.instagram.com/wedr.uyu">
+                <img src="{{ url_for('static', filename='images/instagram-icon.png') }}" alt="Instagram">
+            </a>
         </div>
     </footer>
-</div>
-
-<!-- 로딩 화면 -->
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner"></div>
-    <p>사진을 분석 중입니다. 잠시만 기다려 주세요...</p>
 </div>
 
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>

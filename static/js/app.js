@@ -43,7 +43,8 @@ function previewAndResizeImage(event) {
     reader.readAsDataURL(file);
 }
 
-let resizedImageBlob;
+let messageInterval;
+let isAnalyzing = true;
 
 function submitPhoto() {
     if (!resizedImageBlob) {
@@ -54,8 +55,12 @@ function submitPhoto() {
     const formData = new FormData();
     formData.append('photo', resizedImageBlob, 'resized-photo.jpg');
 
-    // 로딩 화면 표시
-    document.getElementById('loadingOverlay').style.display = 'flex';
+    const submitButton = document.getElementById('submitButton');
+    submitButton.classList.add('loading');
+    submitButton.querySelector('.button-text').style.display = 'none';  // 텍스트 숨기기
+    submitButton.querySelector('.loading-indicator').style.display = 'inline-flex';  // 로딩 표시
+
+    startMessageCycle();  // 메시지 전환 시작
 
     fetch('http://localhost:5000/analyze', {
         method: 'POST',
@@ -73,9 +78,29 @@ function submitPhoto() {
             alert('사진 분석 중 오류가 발생했습니다.');
         })
         .finally(() => {
-            // 로딩 화면 숨기기
-            document.getElementById('loadingOverlay').style.display = 'none';
+            stopMessageCycle();  // 메시지 전환 중지
+            submitButton.classList.remove('loading');
+            submitButton.querySelector('.button-text').style.display = 'inline-block';  // 텍스트 복원
+            submitButton.querySelector('.loading-indicator').style.display = 'none';  // 로딩 숨기기
         });
+}
+
+function startMessageCycle() {
+    const loadingText = document.querySelector('.loading-text');
+    let isAnalyzing = true;  // 메시지 상태를 저장하는 변수
+
+    messageInterval = setInterval(() => {
+        if (isAnalyzing) {
+            loadingText.innerText = "3~5분 소요됩니다\u00a0";
+        } else {
+            loadingText.innerText = "분석 중\u00a0";
+        }
+        isAnalyzing = !isAnalyzing;  // 메시지를 교체
+    }, 5000);  // 5초마다 메시지 교체
+}
+
+function stopMessageCycle() {
+    clearInterval(messageInterval);
 }
 
 function startTest() {
@@ -91,6 +116,7 @@ function loadResults() {
     const detailed_season = localStorage.getItem('detailed_season');
     const imageUrl = localStorage.getItem('image_url');
 
+    const resultPersonalcolor = document.getElementById('result-personal');
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = '';  // 기존 내용을 지우고 새로운 결과를 표시
 
@@ -104,9 +130,9 @@ function loadResults() {
     resultItem.appendChild(img);
 
     // 텍스트 추가
-    const text = document.createElement('p');
-    text.innerText = `${season} - ${detailed_season}`;
-    resultItem.appendChild(text);
+    const text = document.createElement('h2');
+    text.innerText = `${detailed_season}`;
+    resultPersonalcolor.appendChild(text);
 
     resultsContainer.appendChild(resultItem);
 }
