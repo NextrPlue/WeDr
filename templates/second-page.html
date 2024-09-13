@@ -16,6 +16,7 @@
             <img id="previewImage" src="{{ url_for('static', filename='images/placeholder.png') }}" alt="제출한 사진">
         </div>
         <input type="file" id="photoInput" accept="image/*" onchange="previewAndResizeImage(event)">
+        <p>업로드한 사진은 별도로 수집하지 않습니다.</p>
         <div class="instructions">
             <div class="instruction-item">
                 <img src="{{ url_for('static', filename='images/icon1.png') }}" alt="주의사항">

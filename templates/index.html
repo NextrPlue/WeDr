@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css', ver='1.1') }}">
 </head>
 <body>
     <div class="container">
@@ -14,8 +14,24 @@
             <div class="image-container">
                 <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="음식 사진">
             </div>
-            <p>나의 사진으로 퍼스널컬러를 간단하게 알아보세요!</p>
+            <p>내 사진으로 퍼스널컬러를 간단하게 알아보세요!</p>
             <button class="blue-button" onclick="startTest()">테스트 하러가기</button>
+            <p>참여자수 | <span id="visitor-count">{{ visitors }} 명</span></p><br>
+            <p>테스트 공유하기 🔗 <span id="share-count">{{ shares }}</span></p>
+            <div class="share-buttons">
+                <button class="share-button" id="kakao-share">
+                    <img src="{{ url_for('static', filename='images/kakao_share.png') }}" alt="카카오톡 공유">
+                </button>
+                <button class="share-button" id="facebook-share">
+                    <img src="{{ url_for('static', filename='images/facebook_share.png') }}" alt="페이스북 공유">
+                </button>
+                <button class="share-button" id="x-share">
+                    <img src="{{ url_for('static', filename='images/x_share.png') }}" alt="X 공유">
+                </button>
+                <button class="share-button" id="copy-link">
+                    <img src="{{ url_for('static', filename='images/link_share.png') }}" alt="링크 복사">
+                </button>
+            </div>
         </main>
         <pre>
 

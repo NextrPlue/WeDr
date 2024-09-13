@@ -19,8 +19,25 @@
             <div id="results">
                 <!-- 결과 항목이 여기에 동적으로 추가됩니다 -->
             </div>
+            <p>위드 인스타(@wedr.uyu) 테그하고 스토리에 결과지 공유하면 자세한 결과지를 전송드립니다.</p><br>
+            <p>테스트 공유하기 🔗 <span id="share-count">{{ shares }}</span></p>
+            <div class="share-buttons">
+                <button class="share-button" id="kakao-share">
+                    <img src="{{ url_for('static', filename='images/kakao_share.png') }}" alt="카카오톡 공유">
+                </button>
+                <button class="share-button" id="facebook-share">
+                    <img src="{{ url_for('static', filename='images/facebook_share.png') }}" alt="페이스북 공유">
+                </button>
+                <button class="share-button" id="x-share">
+                    <img src="{{ url_for('static', filename='images/x_share.png') }}" alt="X 공유">
+                </button>
+                <button class="share-button" id="copy-link">
+                    <img src="{{ url_for('static', filename='images/link_share.png') }}" alt="링크 복사">
+                </button>
+            </div><br><br>
             <button class="blue-button" onclick="retakeTest()">다시 테스트 하기</button>
-            <button class="gray-button" onclick="goBack()">뒤로 가기</button> <!-- 뒤로가기 버튼 추가 -->
+            <p>서비스의 발전을 위해 설문조사 부탁드립니다!!</p>
+            <button class="gray-button" onclick="location.href='https://docs.google.com/forms/d/e/1FAIpQLScowxE0jBwfCd7rQVOUgbuRk7O-L-GECTrWRtKJxsuwU2yfHA/viewform?usp=sf_link'">설문 조사 하러가기</button>
         </main>
         <footer>
             <div class="footer-left">

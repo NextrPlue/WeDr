@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, make_response
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
 import numpy as np
 import torch
 import cv2
@@ -7,9 +8,15 @@ import facer
 from PIL import Image
 import joblib
 import io
+import os
 
 app = Flask(__name__)
 CORS(app)
+
+# SQLite 데이터베이스 설정
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'site_stats.db')
+db = SQLAlchemy(app)
 
 # K-Means 모델 로드
 base_model_path = 'kmeans_model_L2.pkl'
@@ -104,9 +111,45 @@ def cluster_to_detailed_season(detailed_cluster, season_type):
     }
     return detailed_seasons.get(season_type, {}).get(detailed_cluster, "Unknown")
 
+
+# 데이터베이스 모델 정의
+class SiteStats(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    visitors = db.Column(db.Integer, default=0)
+    shares = db.Column(db.Integer, default=0)
+
+def initialize_database():
+    if SiteStats.query.count() == 0:
+        # 방문자 수 및 공유 수 데이터가 없을 경우 초기화
+        initial_stats = SiteStats(visitors=0, shares=0)
+        db.session.add(initial_stats)
+        db.session.commit()
+
+# 데이터베이스 초기화
+@app.before_request
+def before_request():
+    with app.app_context():
+        initialize_database()
 @app.route('/')
 def index():
-    return render_template('index.html')
+    stats = SiteStats.query.first()
+    visitors = stats.visitors
+    shares = stats.shares
+
+    # 쿠키를 확인하여 새로운 방문자인지 판단
+    if not request.cookies.get('visited'):
+        # 방문자 수 업데이트
+        stats.visitors += 1
+        db.session.commit()
+
+        # 쿠키 설정
+        response = make_response(render_template('index.html', visitors=visitors, shares=shares))
+        response.set_cookie('visited', 'true', max_age=60*60*24*30)  # 30일 동안 유지
+        return response
+    else:
+        # 기존 방문자는 방문자 수 증가 없이 그대로 반환
+        return render_template('index.html', visitors=visitors, shares=shares)
+
 
 @app.route('/second')
 def second_page():
@@ -114,7 +157,10 @@ def second_page():
 
 @app.route('/result')
 def result_page():
-    return render_template('result-page.html')
+    stats = SiteStats.query.first()
+    shares = stats.shares
+
+    return render_template('result-page.html', shares=shares)
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
@@ -153,5 +199,14 @@ def analyze():
         'image_url': image_url
     })
 
+@app.route('/increase-share', methods=['POST'])
+def increase_share():
+    stats = SiteStats.query.first()
+    stats.shares += 1
+    db.session.commit()
+    return jsonify({'shares': stats.shares})
+
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()  # 데이터베이스 테이블 생성
     app.run(host='0.0.0.0', port=5000, debug=True)

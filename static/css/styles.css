@@ -2,12 +2,8 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
     background-color: #ededed;
+    min-height: 100vh;
 }
 
 html, body {
@@ -15,6 +11,7 @@ html, body {
     overflow: auto;
 }
 
+/* Center the container horizontally using margin */
 .container {
     width: 100%;
     max-width: 350px;
@@ -23,10 +20,11 @@ html, body {
     padding: 20px;
     box-sizing: border-box;
     text-align: center;
+    margin: 0 auto;
+    min-height: 100vh; /* Ensure the container takes up the full viewport height */
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* 공간을 위아래로 분배 */
-    min-height: 100vh; /* 화면 전체 높이를 차지하게 설정 */
+    justify-content: space-between; /* Push footer to the bottom */
 }
 
 main {
@@ -82,9 +80,17 @@ main p {
     height: auto;
 }
 
+/* Loading animation keyframes */
+@keyframes loading {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+    100% { transform: translateY(0); }
+}
+
 /* Blue button with loading animation */
 .blue-button {
     position: relative;
+    z-index: 1;
     display: inline-block;
     cursor: pointer;
     outline: none;
@@ -108,6 +114,7 @@ main p {
 
 .blue-button::before {
     position: absolute;
+    z-index: -1;
     content: '';
     width: 100%;
     height: 100%;
@@ -174,6 +181,7 @@ main p {
 /* Gray button with uniform size */
 .gray-button {
     position: relative;
+    z-index: 0;
     display: inline-block;
     cursor: pointer;
     outline: none;
@@ -192,10 +200,12 @@ main p {
     transform-style: preserve-3d;
     transition: transform 150ms cubic-bezier(0, 0, 0.58, 1), background 150ms cubic-bezier(0, 0, 0.58, 1);
     width: 200px;
+    margin-bottom: 20px;
 }
 
 .gray-button::before {
     position: absolute;
+    z-index: -1;
     content: '';
     width: 100%;
     height: 100%;
@@ -293,4 +303,28 @@ footer {
     height: 40px;
     margin-bottom: 10px;
     margin-right: 5px;
+}
+
+/* 공유 버튼들을 가로로 배치 */
+.share-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 5px; /* 버튼 간의 간격 */
+    margin-top: 20px;
+}
+
+.share-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.share-button img {
+    width: 50px;
+    height: 50px;
+    transition: transform 0.2s ease;
+}
+
+.share-button img:hover {
+    transform: scale(1.1);
 }
