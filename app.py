@@ -2,9 +2,8 @@ from flask import Flask, request, jsonify, render_template, make_response
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import numpy as np
-import torch
 import cv2
-import facer
+import dlib
 from PIL import Image
 import joblib
 import io
@@ -22,8 +21,13 @@ db = SQLAlchemy(app)
 base_model_path = 'kmeans_model_L2.pkl'
 kmeans_model = joblib.load(base_model_path)
 
-# CUDA 설정
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# dlib의 얼굴 랜드마크 예측기 로드
+predictor_path = 'shape_predictor_68_face_landmarks.dat'
+if not os.path.exists(predictor_path):
+    raise FileNotFoundError("Facial landmark predictor data file not found. Please download 'shape_predictor_68_face_landmarks.dat'.")
+
+detector = dlib.get_frontal_face_detector()
+predictor = dlib.shape_predictor(predictor_path)
 
 def get_image_url_for_season(season, detailed_season):
     base_url = 'http://localhost:5000'
@@ -49,27 +53,61 @@ def get_image_url_for_season(season, detailed_season):
     }
     return image_map.get(season, {}).get(detailed_season, f"{base_url}/static/images/default.jpg")
 
+def get_face_landmarks(image):
+    # Convert image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Detect faces
+    faces = detector(gray)
+    if len(faces) == 0:
+        return None
+    # For simplicity, take the first detected face
+    face = faces[0]
+    # Get the landmarks/parts for the face
+    landmarks = predictor(gray, face)
+    # Convert landmarks to a NumPy array
+    landmark_points = []
+    for n in range(0, 68):
+        x = landmarks.part(n).x
+        y = landmarks.part(n).y
+        landmark_points.append((x, y))
+    return np.array(landmark_points, np.int32)
+
+def create_skin_mask(image, landmarks):
+    # Define regions to exclude (eyes, eyebrows, lips)
+    left_eye_indices = list(range(36, 42))
+    right_eye_indices = list(range(42, 48))
+    eyebrow_indices = list(range(17, 27))
+    mouth_indices = list(range(48, 61))
+
+    # Create an all-white mask
+    mask = np.ones(image.shape[:2], dtype=np.uint8) * 255
+
+    # Exclude eyes, eyebrows, and mouth by filling them with black color on the mask
+    cv2.fillPoly(mask, [landmarks[left_eye_indices]], 0)
+    cv2.fillPoly(mask, [landmarks[right_eye_indices]], 0)
+    cv2.fillPoly(mask, [landmarks[eyebrow_indices]], 0)
+    cv2.fillPoly(mask, [landmarks[mouth_indices]], 0)
+
+    # Create face convex hull to include the facial region
+    face_indices = list(range(0, 17)) + list(range(17, 27)) + list(range(27, 36)) + list(range(48, 68))
+    face_hull = cv2.convexHull(landmarks[face_indices])
+    # Fill outside of face convex hull with black color
+    face_mask = np.zeros_like(mask)
+    cv2.fillConvexPoly(face_mask, face_hull, 255)
+    # Combine face mask with the exclusion mask
+    skin_mask = cv2.bitwise_and(mask, face_mask)
+    return skin_mask
+
 def detect_and_parse_face(sample):
-    image = torch.from_numpy(sample).permute(2, 0, 1).unsqueeze(0).float().to(device=device)
+    landmarks = get_face_landmarks(sample)
+    if landmarks is None:
+        return None, None
+    skin_mask = create_skin_mask(sample, landmarks)
+    return sample, skin_mask
 
-    face_detector = facer.face_detector('retinaface/mobilenet', device=device)
-    with torch.inference_mode():
-        faces = face_detector(image)
-
-    face_parser = facer.face_parser('farl/lapa/448', device=device)
-    with torch.inference_mode():
-        faces = face_parser(image, faces)
-
-    return faces['seg']['logits'].softmax(dim=1).cpu()
-
-def get_face_skin_mask(seg_probs):
-    tensor = seg_probs.permute(0, 2, 3, 1).squeeze().numpy()
-    return (tensor[:, :, 1] >= 0.5).astype(int)
-
-def extract_skin_rgb(sample, binary_mask):
-    binary_mask_resized = cv2.resize(binary_mask, (sample.shape[1], sample.shape[0]), interpolation=cv2.INTER_NEAREST)
-    img = cv2.cvtColor(sample, cv2.COLOR_BGR2RGB)
-    return img[binary_mask_resized == 1]
+def extract_skin_rgb(image, skin_mask):
+    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    return img[skin_mask > 0]
 
 def calculate_quartile_means(rgb_codes):
     r = np.sort(rgb_codes[:, 0])
@@ -130,6 +168,7 @@ def initialize_database():
 def before_request():
     with app.app_context():
         initialize_database()
+
 @app.route('/')
 def index():
     stats = SiteStats.query.first()
@@ -172,9 +211,14 @@ def analyze():
     sample = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
 
     # 얼굴 인식 및 피부 영역 추출
-    seg_probs = detect_and_parse_face(sample)
-    binary_mask = get_face_skin_mask(seg_probs)
-    skin_rgb_codes = extract_skin_rgb(sample, binary_mask)
+    face_image, skin_mask = detect_and_parse_face(sample)
+    if face_image is None or skin_mask is None:
+        return jsonify({'error': 'No face detected'}), 400
+
+    skin_rgb_codes = extract_skin_rgb(face_image, skin_mask)
+    if skin_rgb_codes.size == 0:
+        return jsonify({'error': 'No skin detected'}), 400
+
     mean_r, mean_g, mean_b = calculate_quartile_means(skin_rgb_codes)
 
     # VSb 값 계산
